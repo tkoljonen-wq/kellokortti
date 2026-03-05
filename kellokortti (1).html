@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Kellokortti</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2: #242424;
+    --accent: #c8f060;
+    --accent2: #60c8f0;
+    --text: #f0ede8;
+    --muted: #666;
+    --danger: #f06060;
+    --border: #2a2a2a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    max-width: 430px;
+    margin: 0 auto;
+    padding: 0 0 80px 0;
+  }
+
+  header {
+    padding: 28px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+
+  header .sub {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 10;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 14px 10px;
+    text-align: center;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 0.2s;
+    border-bottom: 2px solid transparent;
+    user-select: none;
+  }
+
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .page { display: none; padding: 20px; }
+  .page.active { display: block; }
+
+  /* CLOCK PAGE */
+  .clock-display {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 28px 20px;
+    text-align: center;
+    margin-bottom: 24px;
+    border: 1px solid var(--border);
+  }
+
+  .date-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+  }
+
+  .live-clock {
+    font-size: 44px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -1px;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-top: 10px;
+  }
+
+  .status-badge.idle { background: var(--surface2); color: var(--muted); }
+  .status-badge.running { background: rgba(200,240,96,0.15); color: var(--accent); animation: pulse 2s infinite; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  .elapsed-display {
+    margin-top: 12px;
+    font-size: 28px;
+    color: var(--accent);
+    font-weight: 500;
+    display: none;
+  }
+
+  .elapsed-display.show { display: block; }
+
+  /* BUTTONS */
+  .btn-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .btn {
+    padding: 18px 10px;
+    border-radius: 14px;
+    border: none;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.15s;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .btn:active { transform: scale(0.96); }
+
+  .btn-start {
+    background: var(--accent);
+    color: #0f0f0f;
+    grid-column: 1 / -1;
+    font-size: 16px;
+    padding: 22px;
+  }
+
+  .btn-start:disabled {
+    background: var(--surface2);
+    color: var(--muted);
+    cursor: default;
+  }
+
+  .btn-stop {
+    background: var(--danger);
+    color: #fff;
+  }
+
+  .btn-stop:disabled {
+    background: var(--surface2);
+    color: var(--muted);
+    cursor: default;
+  }
+
+  .btn-cancel {
+    background: var(--surface2);
+    color: var(--muted);
+  }
+
+  /* NOTE INPUT */
+  .note-section {
+    margin-bottom: 20px;
+  }
+
+  .note-section label {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+  }
+
+  .note-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .note-input:focus { border-color: var(--accent); }
+
+  /* ENTRIES LIST */
+  .section-title {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .entry-card {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .entry-left { flex: 1; min-width: 0; }
+
+  .entry-date {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .entry-note {
+    font-size: 13px;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .entry-time {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  .entry-delete {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 4px 6px;
+    font-size: 16px;
+    border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+  }
+
+  .entry-delete:hover { color: var(--danger); background: rgba(240,96,96,0.1); }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.8;
+  }
+
+  /* MANUAL ENTRY */
+  .manual-card {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 24px;
+    border: 1px solid var(--border);
+  }
+
+  .manual-card .section-title {
+    margin-bottom: 16px;
+    color: var(--accent2);
+  }
+
+  .manual-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .manual-grid.full { grid-template-columns: 1fr; }
+
+  .field-label {
+    display: block;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 6px;
+  }
+
+  .manual-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+    color-scheme: dark;
+  }
+
+  .manual-input:focus { border-color: var(--accent2); }
+
+  .btn-manual {
+    width: 100%;
+    background: var(--accent2);
+    color: #0f0f0f;
+    padding: 16px;
+    font-size: 14px;
+    margin-top: 6px;
+  }
+
+  /* SUMMARY PAGE */
+  .summary-card {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+  }
+
+  .summary-total {
+    text-align: center;
+    padding: 24px 0 16px;
+  }
+
+  .summary-total .label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+
+  .summary-total .hours {
+    font-size: 52px;
+    font-weight: 500;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .summary-total .unit {
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .filter-section {
+    margin-bottom: 20px;
+  }
+
+  .filter-section label {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+  }
+
+  .date-filter-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .date-input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.2s;
+    color-scheme: dark;
+  }
+
+  .date-input:focus { border-color: var(--accent2); }
+
+  .btn-calc {
+    width: 100%;
+    background: var(--accent2);
+    color: #0f0f0f;
+    padding: 16px;
+    font-size: 14px;
+  }
+
+  /* Day checkboxes */
+  .day-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .day-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: border-color 0.2s;
+    user-select: none;
+  }
+
+  .day-item.selected { border-color: var(--accent2); background: rgba(96,200,240,0.05); }
+
+  .day-check {
+    width: 20px; height: 20px;
+    border-radius: 6px;
+    border: 2px solid var(--muted);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+
+  .day-item.selected .day-check {
+    background: var(--accent2);
+    border-color: var(--accent2);
+    color: #0f0f0f;
+    font-size: 12px;
+  }
+
+  .day-info { flex: 1; }
+  .day-date { font-size: 13px; color: var(--text); }
+  .day-note { font-size: 11px; color: var(--muted); }
+  .day-dur { font-size: 14px; color: var(--accent); font-weight: 500; }
+
+  .sel-all-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    align-items: center;
+  }
+
+  .link-btn {
+    background: none;
+    border: none;
+    color: var(--accent2);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    padding: 4px 0;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--accent);
+    color: #0f0f0f;
+    padding: 10px 22px;
+    border-radius: 30px;
+    font-size: 13px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s;
+    white-space: nowrap;
+    z-index: 100;
+  }
+
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Bottom nav placeholder */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 430px;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding: 8px 0 10px;
+    z-index: 20;
+  }
+
+  .nav-item {
+    flex: 1;
+    text-align: center;
+    padding: 8px 4px 4px;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: color 0.2s;
+    user-select: none;
+  }
+
+  .nav-item.active { color: var(--accent); }
+
+  .nav-icon { font-size: 20px; margin-bottom: 3px; }
+
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Kellokortti</h1>
+  <span class="sub">työtuntiseuranta</span>
+</header>
+
+<!-- Pages -->
+<div id="page-kello" class="page active">
+  <div class="clock-display">
+    <div class="date-label" id="date-label">—</div>
+    <div class="live-clock" id="live-clock">00:00:00</div>
+    <div class="status-badge idle" id="status-badge">Ei kirjattu</div>
+    <div class="elapsed-display" id="elapsed-display">+00:00:00</div>
+  </div>
+
+  <div class="note-section">
+    <label>Muistiinpano (vapaaehtoinen)</label>
+    <input class="note-input" id="note-input" type="text" placeholder="esim. Toimisto, projekti A...">
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-start" id="btn-start" onclick="startClock()">▶ Aloita työpäivä</button>
+    <button class="btn btn-stop" id="btn-stop" disabled onclick="stopClock()">⏹ Lopeta &amp; tallenna</button>
+    <button class="btn btn-cancel" id="btn-cancel" disabled onclick="cancelClock()">✕ Peruuta</button>
+  </div>
+
+  <div class="section-title">
+    <span>Viimeisimmät merkinnät</span>
+  </div>
+  <div id="recent-list"></div>
+</div>
+
+<div id="page-loki" class="page">
+  <div class="manual-card">
+    <div class="section-title"><span>&#10133; Lisää manuaalisesti</span></div>
+    <div class="manual-grid">
+      <div>
+        <label class="field-label">Päivämäärä</label>
+        <input class="manual-input" type="date" id="manual-date">
+      </div>
+      <div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div>
+            <label class="field-label">Tunnit</label>
+            <input class="manual-input" type="number" id="manual-hours" min="0" max="24" placeholder="0">
+          </div>
+          <div>
+            <label class="field-label">Minuutit</label>
+            <input class="manual-input" type="number" id="manual-mins" min="0" max="59" placeholder="0">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-bottom:10px">
+      <label class="field-label">Muistiinpano (vapaaehtoinen)</label>
+      <input class="manual-input" type="text" id="manual-note" placeholder="esim. Etätyö, projekti B...">
+    </div>
+    <button class="btn btn-manual" onclick="saveManual()">Tallenna merkintä</button>
+  </div>
+
+  <div class="section-title">
+    <span>Kaikki merkinnät</span>
+    <button class="link-btn" onclick="clearAll()">Tyhjennä kaikki</button>
+  </div>
+  <div id="full-list"></div>
+</div>
+
+<div id="page-yhteenveto" class="page">
+  <div class="filter-section">
+    <label>Valitse aikaväli</label>
+    <div class="date-filter-row">
+      <input class="date-input" type="date" id="date-from" placeholder="Alku">
+      <input class="date-input" type="date" id="date-to" placeholder="Loppu">
+    </div>
+    <button class="btn btn-calc" onclick="filterByDate()">Hae päivät</button>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="sel-all-row">
+    <span class="section-title" style="margin:0">Valitse päivät laskettavaksi</span>
+    <button class="link-btn" onclick="toggleAll()">Valitse kaikki</button>
+  </div>
+  <div id="day-list" class="day-list"></div>
+
+  <div class="divider"></div>
+
+  <div class="summary-card">
+    <div class="summary-total">
+      <div class="label">Valittu yhteensä</div>
+      <div class="hours" id="total-hours">0:00</div>
+      <div class="unit">tuntia</div>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom nav -->
+<div class="bottom-nav">
+  <div class="nav-item active" id="nav-kello" onclick="showPage('kello')">
+    <div class="nav-icon">⏱</div>kello
+  </div>
+  <div class="nav-item" id="nav-loki" onclick="showPage('loki')">
+    <div class="nav-icon">📋</div>loki
+  </div>
+  <div class="nav-item" id="nav-yhteenveto" onclick="showPage('yhteenveto')">
+    <div class="nav-icon">📊</div>yhteenveto
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// --- State ---
+let startTime = null;
+let timerInterval = null;
+let clockInterval = null;
+
+// --- Storage ---
+function getEntries() {
+  try { return JSON.parse(localStorage.getItem('kellokortti_entries') || '[]'); }
+  catch(e) { return []; }
+}
+
+function saveEntries(entries) {
+  localStorage.setItem('kellokortti_entries', JSON.stringify(entries));
+}
+
+function getRunning() {
+  try { return JSON.parse(localStorage.getItem('kellokortti_running') || 'null'); }
+  catch(e) { return null; }
+}
+
+function saveRunning(data) {
+  if (data) localStorage.setItem('kellokortti_running', JSON.stringify(data));
+  else localStorage.removeItem('kellokortti_running');
+}
+
+// --- Clock tick ---
+function tickClock() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  document.getElementById('live-clock').textContent =
+    `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+  const days = ['su','ma','ti','ke','to','pe','la'];
+  const months = ['tammikuuta','helmikuuta','maaliskuuta','huhtikuuta','toukokuuta','kesäkuuta',
+    'heinäkuuta','elokuuta','syyskuuta','lokakuuta','marraskuuta','joulukuuta'];
+  document.getElementById('date-label').textContent =
+    `${days[now.getDay()]} ${now.getDate()}. ${months[now.getMonth()]} ${now.getFullYear()}`;
+
+  if (startTime) {
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    const h = Math.floor(elapsed / 3600);
+    const m = Math.floor((elapsed % 3600) / 60);
+    const s = elapsed % 60;
+    document.getElementById('elapsed-display').textContent =
+      `+${pad(h)}:${pad(m)}:${pad(s)}`;
+  }
+}
+
+// --- Page navigation ---
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+
+  if (name === 'loki') renderFullList();
+  if (name === 'yhteenveto') renderDayList();
+}
+
+// --- Start ---
+function startClock() {
+  startTime = Date.now();
+  saveRunning({ startTime, note: document.getElementById('note-input').value });
+
+  document.getElementById('btn-start').disabled = true;
+  document.getElementById('btn-stop').disabled = false;
+  document.getElementById('btn-cancel').disabled = false;
+  document.getElementById('elapsed-display').classList.add('show');
+
+  const badge = document.getElementById('status-badge');
+  badge.textContent = 'Työ käynnissä';
+  badge.className = 'status-badge running';
+}
+
+// --- Stop ---
+function stopClock() {
+  if (!startTime) return;
+  const endTime = Date.now();
+  const durationMs = endTime - startTime;
+  const durationMin = Math.round(durationMs / 60000);
+
+  const note = document.getElementById('note-input').value.trim();
+  const start = new Date(startTime);
+  const end = new Date(endTime);
+
+  const entry = {
+    id: Date.now(),
+    date: formatDate(start),
+    startStr: formatTime(start),
+    endStr: formatTime(end),
+    durationMin,
+    note: note || ''
+  };
+
+  const entries = getEntries();
+  entries.unshift(entry);
+  saveEntries(entries);
+
+  resetState();
+  renderRecentList();
+  showToast(`Tallennettu: ${formatDuration(durationMin)}`);
+}
+
+// --- Cancel ---
+function cancelClock() {
+  resetState();
+  showToast('Merkintä peruutettu');
+}
+
+function resetState() {
+  startTime = null;
+  saveRunning(null);
+  document.getElementById('btn-start').disabled = false;
+  document.getElementById('btn-stop').disabled = true;
+  document.getElementById('btn-cancel').disabled = true;
+  document.getElementById('elapsed-display').classList.remove('show');
+  document.getElementById('elapsed-display').textContent = '+00:00:00';
+  document.getElementById('note-input').value = '';
+  const badge = document.getElementById('status-badge');
+  badge.textContent = 'Ei kirjattu';
+  badge.className = 'status-badge idle';
+}
+
+// --- Render ---
+function renderRecentList() {
+  const entries = getEntries().slice(0, 5);
+  const el = document.getElementById('recent-list');
+  if (!entries.length) {
+    el.innerHTML = '<div class="empty-state">Ei vielä merkintöjä.<br>Paina <strong>Aloita työpäivä</strong> aloittaaksesi.</div>';
+    return;
+  }
+  el.innerHTML = entries.map(e => entryHTML(e)).join('');
+}
+
+function renderFullList() {
+  const entries = getEntries();
+  const el = document.getElementById('full-list');
+  if (!entries.length) {
+    el.innerHTML = '<div class="empty-state">Ei merkintöjä.</div>';
+    return;
+  }
+  el.innerHTML = entries.map(e => entryHTML(e)).join('');
+}
+
+function entryHTML(e) {
+  const timeStr = e.manual ? `${e.date} · manuaalinen` : `${e.date} · ${e.startStr}–${e.endStr}`;
+  return `<div class="entry-card">
+    <div class="entry-left">
+      <div class="entry-date">${timeStr}</div>
+      <div class="entry-note">${e.note || '—'}</div>
+    </div>
+    <div class="entry-time">${formatDuration(e.durationMin)}</div>
+    <button class="entry-delete" onclick="deleteEntry(${e.id})" title="Poista">✕</button>
+  </div>`;
+}
+
+function deleteEntry(id) {
+  const entries = getEntries().filter(e => e.id !== id);
+  saveEntries(entries);
+  renderRecentList();
+  renderFullList();
+  renderDayList();
+  showToast('Merkintä poistettu');
+}
+
+function clearAll() {
+  if (!confirm('Poistetaanko kaikki merkinnät?')) return;
+  saveEntries([]);
+  renderRecentList();
+  renderFullList();
+  renderDayList();
+  showToast('Kaikki poistettu');
+}
+
+// --- Manual entry ---
+function saveManual() {
+  const dateVal = document.getElementById('manual-date').value;
+  const hoursVal = parseInt(document.getElementById('manual-hours').value) || 0;
+  const minsVal = parseInt(document.getElementById('manual-mins').value) || 0;
+  const note = document.getElementById('manual-note').value.trim();
+
+  if (!dateVal) { showToast('Valitse päivämäärä!'); return; }
+  if (hoursVal === 0 && minsVal === 0) { showToast('Syötä vähintään 1 minuutti!'); return; }
+
+  const durationMin = hoursVal * 60 + minsVal;
+
+  const entry = {
+    id: Date.now(),
+    date: dateVal,
+    startStr: '—',
+    endStr: '—',
+    durationMin,
+    note: note || '',
+    manual: true
+  };
+
+  const entries = getEntries();
+  entries.unshift(entry);
+  saveEntries(entries);
+
+  // Clear form
+  document.getElementById('manual-date').value = '';
+  document.getElementById('manual-hours').value = '';
+  document.getElementById('manual-mins').value = '';
+  document.getElementById('manual-note').value = '';
+
+  renderFullList();
+  renderRecentList();
+  showToast(`Lisätty: ${formatDuration(durationMin)}`);
+}
+
+// --- Summary ---
+let filteredEntries = null;
+
+function renderDayList() {
+  const entries = filteredEntries !== null ? filteredEntries : getEntries();
+  const el = document.getElementById('day-list');
+  if (!entries.length) {
+    el.innerHTML = '<div class="empty-state">Ei merkintöjä valitulle aikavälille.</div>';
+    updateTotal();
+    return;
+  }
+
+  // Group by date
+  const byDate = {};
+  entries.forEach(e => {
+    if (!byDate[e.date]) byDate[e.date] = { date: e.date, entries: [], totalMin: 0 };
+    byDate[e.date].entries.push(e);
+    byDate[e.date].totalMin += e.durationMin;
+  });
+
+  const days = Object.values(byDate).sort((a,b) => b.date.localeCompare(a.date));
+
+  el.innerHTML = days.map(d => `
+    <div class="day-item" id="day-${d.date}" onclick="toggleDay('${d.date}')">
+      <div class="day-check" id="check-${d.date}"></div>
+      <div class="day-info">
+        <div class="day-date">${d.date}</div>
+        <div class="day-note">${d.entries.map(e=>e.note||'—').join(', ')}</div>
+      </div>
+      <div class="day-dur">${formatDuration(d.totalMin)}</div>
+    </div>
+  `).join('');
+
+  updateTotal();
+}
+
+function toggleDay(date) {
+  const item = document.getElementById('day-' + date);
+  item.classList.toggle('selected');
+  const check = document.getElementById('check-' + date);
+  check.textContent = item.classList.contains('selected') ? '✓' : '';
+  updateTotal();
+}
+
+function toggleAll() {
+  const items = document.querySelectorAll('.day-item');
+  const allSelected = Array.from(items).every(i => i.classList.contains('selected'));
+  items.forEach(item => {
+    if (allSelected) {
+      item.classList.remove('selected');
+      item.querySelector('.day-check').textContent = '';
+    } else {
+      item.classList.add('selected');
+      item.querySelector('.day-check').textContent = '✓';
+    }
+  });
+  updateTotal();
+}
+
+function updateTotal() {
+  const entries = filteredEntries !== null ? filteredEntries : getEntries();
+  const selectedDates = new Set(
+    Array.from(document.querySelectorAll('.day-item.selected'))
+      .map(el => el.id.replace('day-', ''))
+  );
+
+  let totalMin = 0;
+  entries.forEach(e => {
+    if (selectedDates.has(e.date)) totalMin += e.durationMin;
+  });
+
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  document.getElementById('total-hours').textContent =
+    `${h}:${String(m).padStart(2,'0')}`;
+}
+
+function filterByDate() {
+  const from = document.getElementById('date-from').value;
+  const to = document.getElementById('date-to').value;
+  const entries = getEntries();
+
+  if (!from && !to) {
+    filteredEntries = null;
+    renderDayList();
+    return;
+  }
+
+  filteredEntries = entries.filter(e => {
+    if (from && e.date < from) return false;
+    if (to && e.date > to) return false;
+    return true;
+  });
+
+  renderDayList();
+}
+
+// --- Helpers ---
+function formatDate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function formatTime(d) {
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+function formatDuration(min) {
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return `${h}:${String(m).padStart(2,'0')}`;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// --- Init ---
+(function init() {
+  clockInterval = setInterval(tickClock, 1000);
+  tickClock();
+
+  // Restore running state
+  const running = getRunning();
+  if (running) {
+    startTime = running.startTime;
+    document.getElementById('note-input').value = running.note || '';
+    document.getElementById('btn-start').disabled = true;
+    document.getElementById('btn-stop').disabled = false;
+    document.getElementById('btn-cancel').disabled = false;
+    document.getElementById('elapsed-display').classList.add('show');
+    const badge = document.getElementById('status-badge');
+    badge.textContent = 'Työ käynnissä';
+    badge.className = 'status-badge running';
+  }
+
+  renderRecentList();
+
+  // Set today as default for manual entry
+  const today = new Date();
+  document.getElementById('manual-date').value = formatDate(today);
+})();
+</script>
+</body>
+</html>
