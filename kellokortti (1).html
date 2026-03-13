@@ -3,9 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f0f0f">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kellokortti">
 <meta name="mobile-web-app-capable" content="yes">
 <title>Kellokortti</title>
+
+<!-- SVG favicon -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%231a1a1a'/%3E%3Crect x='2' y='2' width='508' height='508' rx='94' fill='none' stroke='%232a2a2a' stroke-width='4'/%3E%3Ccircle cx='256' cy='236' r='130' fill='none' stroke='%23c8f060' stroke-width='10'/%3E%3Ccircle cx='256' cy='236' r='6' fill='%23c8f060'/%3E%3Cline x1='256' y1='236' x2='256' y2='156' stroke='%23f0ede8' stroke-width='8' stroke-linecap='round'/%3E%3Cline x1='256' y1='236' x2='316' y2='236' stroke='%23f0ede8' stroke-width='6' stroke-linecap='round'/%3E%3Ccircle cx='256' cy='106' r='4' fill='%23c8f060'/%3E%3Ccircle cx='386' cy='236' r='4' fill='%23c8f060'/%3E%3Ccircle cx='126' cy='236' r='4' fill='%23c8f060'/%3E%3Ccircle cx='256' cy='366' r='4' fill='%23c8f060'/%3E%3Crect x='140' y='410' width='232' height='8' rx='4' fill='%23c8f060' opacity='0.4'/%3E%3Crect x='180' y='430' width='152' height='6' rx='3' fill='%23666' opacity='0.5'/%3E%3C/svg%3E" />
+
+<link rel="apple-touch-icon" id="appleTouchIcon" />
+
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -55,7 +64,6 @@
     letter-spacing: 1px;
   }
 
-  /* TABS */
   .tabs {
     display: flex;
     border-bottom: 1px solid var(--border);
@@ -87,7 +95,6 @@
   .page { display: none; padding: 20px; }
   .page.active { display: block; }
 
-  /* CLOCK PAGE */
   .clock-display {
     background: var(--surface);
     border-radius: 16px;
@@ -142,7 +149,6 @@
 
   .elapsed-display.show { display: block; }
 
-  /* BUTTONS */
   .btn-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -197,7 +203,6 @@
     color: var(--muted);
   }
 
-  /* NOTE INPUT */
   .note-section {
     margin-bottom: 20px;
   }
@@ -226,7 +231,6 @@
 
   .note-input:focus { border-color: var(--accent); }
 
-  /* ENTRIES LIST */
   .section-title {
     font-size: 11px;
     color: var(--muted);
@@ -294,7 +298,6 @@
     line-height: 1.8;
   }
 
-  /* MANUAL ENTRY */
   .manual-card {
     background: var(--surface);
     border-radius: 16px;
@@ -351,7 +354,6 @@
     margin-top: 6px;
   }
 
-  /* SUMMARY PAGE */
   .summary-card {
     background: var(--surface);
     border-radius: 16px;
@@ -430,7 +432,6 @@
     font-size: 14px;
   }
 
-  /* Day checkboxes */
   .day-list { display: flex; flex-direction: column; gap: 8px; }
 
   .day-item {
@@ -488,7 +489,6 @@
     padding: 4px 0;
   }
 
-  /* Toast */
   .toast {
     position: fixed;
     bottom: 90px;
@@ -508,7 +508,6 @@
 
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-  /* Bottom nav placeholder */
   .bottom-nav {
     position: fixed;
     bottom: 0;
@@ -550,7 +549,6 @@
   <span class="sub">työtuntiseuranta</span>
 </header>
 
-<!-- Pages -->
 <div id="page-kello" class="page active">
   <div class="clock-display">
     <div class="date-label" id="date-label">—</div>
@@ -640,7 +638,6 @@
   </div>
 </div>
 
-<!-- Bottom nav -->
 <div class="bottom-nav">
   <div class="nav-item active" id="nav-kello" onclick="showPage('kello')">
     <div class="nav-icon">⏱</div>kello
@@ -656,12 +653,10 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// --- State ---
 let startTime = null;
 let timerInterval = null;
 let clockInterval = null;
 
-// --- Storage ---
 function getEntries() {
   try { return JSON.parse(localStorage.getItem('kellokortti_entries') || '[]'); }
   catch(e) { return []; }
@@ -681,7 +676,6 @@ function saveRunning(data) {
   else localStorage.removeItem('kellokortti_running');
 }
 
-// --- Clock tick ---
 function tickClock() {
   const now = new Date();
   const pad = n => String(n).padStart(2,'0');
@@ -704,7 +698,6 @@ function tickClock() {
   }
 }
 
-// --- Page navigation ---
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -715,7 +708,6 @@ function showPage(name) {
   if (name === 'yhteenveto') renderDayList();
 }
 
-// --- Start ---
 function startClock() {
   startTime = Date.now();
   saveRunning({ startTime, note: document.getElementById('note-input').value });
@@ -730,7 +722,6 @@ function startClock() {
   badge.className = 'status-badge running';
 }
 
-// --- Stop ---
 function stopClock() {
   if (!startTime) return;
   const endTime = Date.now();
@@ -759,7 +750,6 @@ function stopClock() {
   showToast(`Tallennettu: ${formatDuration(durationMin)}`);
 }
 
-// --- Cancel ---
 function cancelClock() {
   resetState();
   showToast('Merkintä peruutettu');
@@ -779,7 +769,6 @@ function resetState() {
   badge.className = 'status-badge idle';
 }
 
-// --- Render ---
 function renderRecentList() {
   const entries = getEntries().slice(0, 5);
   const el = document.getElementById('recent-list');
@@ -830,7 +819,6 @@ function clearAll() {
   showToast('Kaikki poistettu');
 }
 
-// --- Manual entry ---
 function saveManual() {
   const dateVal = document.getElementById('manual-date').value;
   const hoursVal = parseInt(document.getElementById('manual-hours').value) || 0;
@@ -856,7 +844,6 @@ function saveManual() {
   entries.unshift(entry);
   saveEntries(entries);
 
-  // Clear form
   document.getElementById('manual-date').value = '';
   document.getElementById('manual-hours').value = '';
   document.getElementById('manual-mins').value = '';
@@ -867,7 +854,6 @@ function saveManual() {
   showToast(`Lisätty: ${formatDuration(durationMin)}`);
 }
 
-// --- Summary ---
 let filteredEntries = null;
 
 function renderDayList() {
@@ -879,7 +865,6 @@ function renderDayList() {
     return;
   }
 
-  // Group by date
   const byDate = {};
   entries.forEach(e => {
     if (!byDate[e.date]) byDate[e.date] = { date: e.date, entries: [], totalMin: 0 };
@@ -964,7 +949,6 @@ function filterByDate() {
   renderDayList();
 }
 
-// --- Helpers ---
 function formatDate(d) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
@@ -986,12 +970,10 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-// --- Init ---
 (function init() {
   clockInterval = setInterval(tickClock, 1000);
   tickClock();
 
-  // Restore running state
   const running = getRunning();
   if (running) {
     startTime = running.startTime;
@@ -1007,9 +989,131 @@ function showToast(msg) {
 
   renderRecentList();
 
-  // Set today as default for manual entry
   const today = new Date();
   document.getElementById('manual-date').value = formatDate(today);
+})();
+</script>
+
+<!-- Web App Manifest & ikoni-generointi -->
+<script>
+(function() {
+  function generateIcon(size) {
+    const c = document.createElement('canvas');
+    c.width = size; c.height = size;
+    const ctx = c.getContext('2d');
+    const s = size / 512;
+
+    // Tumma pyöristetty tausta
+    const r = 96 * s;
+    ctx.fillStyle = '#1a1a1a';
+    ctx.beginPath();
+    ctx.moveTo(r, 0);
+    ctx.lineTo(size - r, 0); ctx.quadraticCurveTo(size, 0, size, r);
+    ctx.lineTo(size, size - r); ctx.quadraticCurveTo(size, size, size - r, size);
+    ctx.lineTo(r, size); ctx.quadraticCurveTo(0, size, 0, size - r);
+    ctx.lineTo(0, r); ctx.quadraticCurveTo(0, 0, r, 0);
+    ctx.closePath();
+    ctx.fill();
+
+    // Reunaviiva
+    ctx.strokeStyle = '#2a2a2a';
+    ctx.lineWidth = 4 * s;
+    ctx.stroke();
+
+    const cx = 256 * s;
+    const cy = 220 * s;
+    const cr = 140 * s;
+
+    // Kellotaulu - ulkokehä
+    ctx.beginPath();
+    ctx.arc(cx, cy, cr, 0, Math.PI * 2);
+    ctx.strokeStyle = '#c8f060';
+    ctx.lineWidth = 8 * s;
+    ctx.stroke();
+
+    // Tuntimerkit (12 kpl)
+    for (let i = 0; i < 12; i++) {
+      const angle = (i * 30 - 90) * Math.PI / 180;
+      const isMain = i % 3 === 0;
+      const innerR = cr - (isMain ? 18 : 12) * s;
+      const outerR = cr - 4 * s;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(angle) * innerR, cy + Math.sin(angle) * innerR);
+      ctx.lineTo(cx + Math.cos(angle) * outerR, cy + Math.sin(angle) * outerR);
+      ctx.strokeStyle = isMain ? '#c8f060' : '#666';
+      ctx.lineWidth = (isMain ? 4 : 2) * s;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+    }
+
+    // Tuntiviisari (osoittaa ~10:10)
+    const hourAngle = (310 - 90) * Math.PI / 180;
+    const hourLen = 70 * s;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(hourAngle) * hourLen, cy + Math.sin(hourAngle) * hourLen);
+    ctx.strokeStyle = '#f0ede8';
+    ctx.lineWidth = 8 * s;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    // Minuuttiviisari
+    const minAngle = (60 - 90) * Math.PI / 180;
+    const minLen = 100 * s;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(minAngle) * minLen, cy + Math.sin(minAngle) * minLen);
+    ctx.strokeStyle = '#f0ede8';
+    ctx.lineWidth = 5 * s;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    // Keskipiste
+    ctx.beginPath();
+    ctx.arc(cx, cy, 6 * s, 0, Math.PI * 2);
+    ctx.fillStyle = '#c8f060';
+    ctx.fill();
+
+    // Alaosan teksti-simulaatio
+    ctx.fillStyle = 'rgba(200,240,96,0.5)';
+    ctx.beginPath();
+    ctx.roundRect(140 * s, 410 * s, 232 * s, 8 * s, 4 * s);
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(102,102,102,0.5)';
+    ctx.beginPath();
+    ctx.roundRect(170 * s, 430 * s, 172 * s, 6 * s, 3 * s);
+    ctx.fill();
+
+    return c.toDataURL('image/png');
+  }
+
+  const icon192 = generateIcon(192);
+  const icon512 = generateIcon(512);
+
+  const appleLink = document.getElementById('appleTouchIcon');
+  if (appleLink) appleLink.href = icon192;
+
+  const manifest = {
+    id: './',
+    name: 'Kellokortti',
+    short_name: 'Kellokortti',
+    description: 'Työtuntiseuranta',
+    start_url: './',
+    display: 'standalone',
+    background_color: '#0f0f0f',
+    theme_color: '#0f0f0f',
+    icons: [
+      { src: icon192, sizes: '192x192', type: 'image/png' },
+      { src: icon512, sizes: '512x512', type: 'image/png' }
+    ]
+  };
+
+  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+  const link = document.createElement('link');
+  link.rel = 'manifest';
+  link.href = URL.createObjectURL(blob);
+  document.head.appendChild(link);
 })();
 </script>
 </body>
