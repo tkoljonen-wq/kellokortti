@@ -1,11 +1,11 @@
-const CACHE = 'kellokortti-v1';
+const CACHE = 'kellokortti-v2';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icons/icon-192.svg',
-  '/icons/icon-512.svg',
-  '/icons/icon-maskable.svg'
+  './',
+  './index.html',
+  './manifest.json',
+  './icons/icon-192.svg',
+  './icons/icon-512.svg',
+  './icons/icon-maskable.svg'
 ];
 
 self.addEventListener('install', e => {

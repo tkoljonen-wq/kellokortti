@@ -2,7 +2,7 @@
   "name": "Kellokortti",
   "short_name": "Kellokortti",
   "description": "Työtuntiseuranta",
-  "start_url": "/",
+  "start_url": ".",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0f0f0f",
